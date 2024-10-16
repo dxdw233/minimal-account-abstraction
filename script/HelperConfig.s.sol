@@ -8,11 +8,14 @@ contract HelperConfig is Script {
 
     struct NetworkConfig {
         address entryPoint;
+        address account;
     }
 
     uint256 constant ETH_SEPOLIA_CHAIN_ID = 11155111;
     uint256 constant ZKSYNC_SEPOLIA_CHAIN_ID = 300;
     uint256 constant LOCAL_CHAIN_ID = 31337;
+    address constant BURNNER_ACCOUNT = 0x0a167B4046dF2447D438De423Ab527B14Ca83EC0;
+    address constant FOUNDRY_DEFAULT_SENDER = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
 
     NetworkConfig public localNetworkConfig;
     mapping(uint256 chainId => NetworkConfig) public networkConfigs;
@@ -37,12 +40,12 @@ contract HelperConfig is Script {
     }
 
     function getEthSepoliaConfig() public pure returns (NetworkConfig memory) {
-        return NetworkConfig({entryPoint: 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789});
+        return NetworkConfig({entryPoint: 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789, account: BURNNER_ACCOUNT});
     }
 
     function getZkSyncSepoliaConfig() public pure returns (NetworkConfig memory) {
         // ZkSync has native AA
-        return NetworkConfig({entryPoint: address(0)});
+        return NetworkConfig({entryPoint: address(0), account: BURNNER_ACCOUNT});
     }
 
     function getOrCreateAnvilConfig() public view returns (NetworkConfig memory) {
@@ -51,5 +54,6 @@ contract HelperConfig is Script {
         }
 
         //TODO: deploy a mock entry point contract
+        return NetworkConfig({entryPoint: address(0), account: FOUNDRY_DEFAULT_SENDER});
     }
 }

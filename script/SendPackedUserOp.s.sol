@@ -2,19 +2,42 @@
 pragma solidity ^0.8.25;
 
 import {Script} from "forge-std/Script.sol";
-import {MinimalAccount} from "../src/ethereum/MinimalAccount.sol";
-import {HelperConfig} from "../script/HelperConfig.s.sol";
+import {PackedUserOperation} from "lib/account-abstraction/contracts/interfaces/PackedUserOperation.sol";
 
-contract DeployMinimal is Script {
+contract SendPackedUserOp is Script {
     function run() public {}
 
-    function deployMinimalAccount() public {
-        HelperConfig helperConfig = new HelperConfig();
-        HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
+    function generateSignedUserOperation(bytes memory callData, address sender)
+        public
+        returns (PackedUserOperation memory)
+    {
+        // 1. Generate unsigned data
+        uint256 nonce = vm.getNonce(sender);
+        PackedUserOperation memory unsignedUserOp = _generateUnsignedUserOperation(callData, sender, nonce);
 
-        vm.startBroadcast();
-        MinimalAccount minimalAccount = new MinimalAccount(config.entryPoint);
-        minimalAccount.transferOwnership(msg.sender);
-        vm.stopBroadcast();
+        // 2. Sign data and return it
+    }
+
+    function _generateUnsignedUserOperation(bytes memory callData, address sender, uint256 nonce)
+        internal
+        pure
+        returns (PackedUserOperation memory)
+    {
+        uint128 verificationGasLimit = 16777216;
+        uint128 callGasLimit = verificationGasLimit;
+        uint128 maxPriorityFeePerGas = 256;
+        uint128 maxFeePerGas = maxPriorityFeePerGas;
+
+        return PackedUserOperation({
+            sender: sender,
+            nonce: nonce,
+            initCode: hex"",
+            callData: callData,
+            accountGasLimits: bytes32(uint256(verificationGasLimit) << 128 | callGasLimit),
+            preVerificationGas: verificationGasLimit,
+            gasFees: bytes32(uint256(maxPriorityFeePerGas) << 128 | maxFeePerGas),
+            paymasterAndData: hex"",
+            signature: hex""
+        });
     }
 }
