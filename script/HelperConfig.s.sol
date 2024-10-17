@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity ^0.8.24;
 
-import {Script} from "forge-std/Script.sol";
+import {Script, console2} from "forge-std/Script.sol";
+import {EntryPoint} from "lib/account-abstraction/contracts/core/EntryPoint.sol";
 
 contract HelperConfig is Script {
     error HelperConfig__InvalidChainId();
@@ -25,11 +26,11 @@ contract HelperConfig is Script {
         networkConfigs[ETH_SEPOLIA_CHAIN_ID] = getEthSepoliaConfig();
     }
 
-    function getConfig() public view returns (NetworkConfig memory) {
+    function getConfig() public returns (NetworkConfig memory) {
         return getConfigByChainId(block.chainid);
     }
 
-    function getConfigByChainId(uint256 chainId) public view returns (NetworkConfig memory) {
+    function getConfigByChainId(uint256 chainId) public returns (NetworkConfig memory) {
         if (chainId == LOCAL_CHAIN_ID) {
             return getOrCreateAnvilConfig();
         } else if (networkConfigs[chainId].entryPoint != address(0)) {
@@ -48,12 +49,15 @@ contract HelperConfig is Script {
         return NetworkConfig({entryPoint: address(0), account: BURNNER_ACCOUNT});
     }
 
-    function getOrCreateAnvilConfig() public view returns (NetworkConfig memory) {
+    function getOrCreateAnvilConfig() public returns (NetworkConfig memory) {
         if (localNetworkConfig.entryPoint != address(0)) {
             return localNetworkConfig;
         }
 
-        //TODO: deploy a mock entry point contract
-        return NetworkConfig({entryPoint: address(0), account: FOUNDRY_DEFAULT_SENDER});
+        // deploy a mock entry point contract
+        console2.log("Deploying mocks...");
+        vm.startBroadcast(FOUNDRY_DEFAULT_SENDER);
+        EntryPoint entryPoint = new EntryPoint();
+        return NetworkConfig({entryPoint: address(entryPoint), account: FOUNDRY_DEFAULT_SENDER});
     }
 }
