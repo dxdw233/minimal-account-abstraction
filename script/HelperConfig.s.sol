@@ -58,6 +58,9 @@ contract HelperConfig is Script {
         console2.log("Deploying mocks...");
         vm.startBroadcast(FOUNDRY_DEFAULT_SENDER);
         EntryPoint entryPoint = new EntryPoint();
+        vm.stopBroadcast();
+        console2.log("Mocks deployed!");
+
         return NetworkConfig({entryPoint: address(entryPoint), account: FOUNDRY_DEFAULT_SENDER});
     }
 }
