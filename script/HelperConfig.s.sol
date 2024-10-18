@@ -17,6 +17,7 @@ contract HelperConfig is Script {
     uint256 constant LOCAL_CHAIN_ID = 31337;
     address constant BURNNER_ACCOUNT = 0x0a167B4046dF2447D438De423Ab527B14Ca83EC0;
     address constant FOUNDRY_DEFAULT_SENDER = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
+    address constant ANVIL_DEFAULT_ACCOUNT = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
     NetworkConfig public localNetworkConfig;
     mapping(uint256 chainId => NetworkConfig) public networkConfigs;
@@ -56,11 +57,12 @@ contract HelperConfig is Script {
 
         // deploy a mock entry point contract
         console2.log("Deploying mocks...");
-        vm.startBroadcast(FOUNDRY_DEFAULT_SENDER);
+        vm.startBroadcast(ANVIL_DEFAULT_ACCOUNT);
         EntryPoint entryPoint = new EntryPoint();
         vm.stopBroadcast();
         console2.log("Mocks deployed!");
 
-        return NetworkConfig({entryPoint: address(entryPoint), account: FOUNDRY_DEFAULT_SENDER});
+        localNetworkConfig = NetworkConfig({entryPoint: address(entryPoint), account: ANVIL_DEFAULT_ACCOUNT});
+        return localNetworkConfig;
     }
 }

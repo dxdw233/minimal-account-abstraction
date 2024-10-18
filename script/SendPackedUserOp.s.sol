@@ -10,6 +10,8 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 contract SendPackedUserOp is Script {
     using MessageHashUtils for bytes32;
 
+    uint256 constant ANVIL_DEFAULT_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+
     function run() public {}
 
     function generateSignedUserOperation(bytes memory callData, HelperConfig.NetworkConfig memory config)
@@ -26,7 +28,14 @@ contract SendPackedUserOp is Script {
         bytes32 digest = userOpHash.toEthSignedMessageHash();
 
         // 3. Sign it
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(config.account, digest);
+        uint8 v;
+        bytes32 r;
+        bytes32 s;
+        if (block.chainid == 31337) {
+            (v, r, s) = vm.sign(ANVIL_DEFAULT_KEY, digest);
+        } else {
+            (v, r, s) = vm.sign(config.account, digest);
+        }
         userOp.signature = abi.encodePacked(r, s, v);
         return userOp;
     }
